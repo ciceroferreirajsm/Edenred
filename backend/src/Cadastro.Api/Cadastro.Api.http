@@ -1,0 +1,158 @@
+# Roteiro de validação manual da API.
+# Use no Visual Studio / Rider ou no VS Code com a extensão "REST Client".
+# Execute as requisições na ordem: os IDs criados são reaproveitados nas seguintes.
+
+@baseUrl = http://localhost:5000/api
+
+### 1) Criar pessoa (201)
+# @name maria
+POST {{baseUrl}}/pessoas
+Content-Type: application/json
+
+{
+  "nome": "Maria Silva",
+  "cpf": "529.982.247-25",
+  "dataNascimento": "1990-05-20",
+  "email": "maria@email.com",
+  "telefone": "(11) 98765-4321"
+}
+
+### 2) Criar segunda pessoa (201)
+# @name joao
+POST {{baseUrl}}/pessoas
+Content-Type: application/json
+
+{
+  "nome": "João Souza",
+  "cpf": "111.444.777-35",
+  "dataNascimento": "1985-01-10",
+  "email": "joao@email.com",
+  "telefone": null
+}
+
+### 3) CPF duplicado -> 409 Conflict
+POST {{baseUrl}}/pessoas
+Content-Type: application/json
+
+{
+  "nome": "Outra Pessoa",
+  "cpf": "52998224725",
+  "dataNascimento": "2000-01-01",
+  "email": "outra@email.com"
+}
+
+### 4) Dados inválidos (nome vazio, CPF e e-mail inválidos) -> 400 com erros por campo
+POST {{baseUrl}}/pessoas
+Content-Type: application/json
+
+{
+  "nome": "",
+  "cpf": "123.456.789-00",
+  "dataNascimento": "1990-01-01",
+  "email": "email-invalido"
+}
+
+### 5) Listar pessoas (paginação + busca)
+GET {{baseUrl}}/pessoas?busca=silva&pagina=1&tamanhoPagina=10
+
+### 6) Consultar pessoa
+GET {{baseUrl}}/pessoas/{{maria.response.body.$.id}}
+
+### 7) Atualizar pessoa
+PUT {{baseUrl}}/pessoas/{{maria.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "nome": "Maria Silva Santos",
+  "cpf": "52998224725",
+  "dataNascimento": "1990-05-20",
+  "email": "maria.santos@email.com",
+  "telefone": "11987654321"
+}
+
+### 8) Criar veículo vinculado à Maria (201) — placa normalizada para ABC1D23
+# @name argo
+POST {{baseUrl}}/veiculos
+Content-Type: application/json
+
+{
+  "placa": "abc-1d23",
+  "anoFabricacao": 2022,
+  "marca": "Fiat",
+  "modelo": "Argo",
+  "pessoaId": "{{maria.response.body.$.id}}"
+}
+
+### 9) Placa duplicada -> 409
+POST {{baseUrl}}/veiculos
+Content-Type: application/json
+
+{
+  "placa": "ABC1D23",
+  "anoFabricacao": 2020,
+  "marca": "VW",
+  "modelo": "Gol",
+  "pessoaId": "{{maria.response.body.$.id}}"
+}
+
+### 10) Ano de fabricação maior que o ano atual -> 400
+POST {{baseUrl}}/veiculos
+Content-Type: application/json
+
+{
+  "placa": "XYZ9876",
+  "anoFabricacao": 2999,
+  "marca": "VW",
+  "modelo": "Gol",
+  "pessoaId": "{{maria.response.body.$.id}}"
+}
+
+### 11) Pessoa inexistente -> 404
+POST {{baseUrl}}/veiculos
+Content-Type: application/json
+
+{
+  "placa": "XYZ9876",
+  "anoFabricacao": 2020,
+  "marca": "VW",
+  "modelo": "Gol",
+  "pessoaId": "00000000-0000-0000-0000-000000000001"
+}
+
+### 12) Listar veículos da Maria
+GET {{baseUrl}}/pessoas/{{maria.response.body.$.id}}/veiculos
+
+### 13) Excluir pessoa com veículo -> 409
+DELETE {{baseUrl}}/pessoas/{{maria.response.body.$.id}}
+
+### 14) Vincular (transferir) veículo para o João
+PATCH {{baseUrl}}/veiculos/{{argo.response.body.$.id}}/pessoa
+Content-Type: application/json
+
+{
+  "pessoaId": "{{joao.response.body.$.id}}"
+}
+
+### 15) Atualizar veículo
+PUT {{baseUrl}}/veiculos/{{argo.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "placa": "ABC1D23",
+  "anoFabricacao": 2023,
+  "marca": "Fiat",
+  "modelo": "Argo Trekking",
+  "pessoaId": "{{joao.response.body.$.id}}"
+}
+
+### 16) Listar veículos (busca por placa/marca/modelo)
+GET {{baseUrl}}/veiculos?busca=fiat
+
+### 17) Agora a Maria pode ser excluída (204)
+DELETE {{baseUrl}}/pessoas/{{maria.response.body.$.id}}
+
+### 18) Excluir veículo (204)
+DELETE {{baseUrl}}/veiculos/{{argo.response.body.$.id}}
+
+### 19) Consultar veículo excluído -> 404
+GET {{baseUrl}}/veiculos/{{argo.response.body.$.id}}

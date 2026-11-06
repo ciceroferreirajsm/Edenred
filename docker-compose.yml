@@ -1,0 +1,19 @@
+services:
+  api:
+    build: ./backend
+    container_name: cadastro-api
+    ports:
+      - "5000:8080"   # Swagger: http://localhost:5000/swagger
+    volumes:
+      - cadastro-data:/app/data
+
+  web:
+    build: ./frontend
+    container_name: cadastro-web
+    ports:
+      - "4200:80"     # Interface: http://localhost:4200
+    depends_on:
+      - api
+
+volumes:
+  cadastro-data:

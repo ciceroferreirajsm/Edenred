@@ -1,0 +1,62 @@
+@if (pessoa(); as p) {
+  <header class="page-header">
+    <div>
+      <a class="back" routerLink="/pessoas">‹ Pessoas</a>
+      <h1>{{ p.nome }}</h1>
+    </div>
+    <div class="header-actions">
+      <a class="btn" [routerLink]="['/pessoas', p.id, 'editar']">Editar</a>
+      <button type="button" class="btn btn-danger" (click)="excluirPessoa()">Excluir</button>
+    </div>
+  </header>
+
+  <section class="card">
+    <dl class="details">
+      <div><dt>CPF</dt><dd class="mono">{{ p.cpf | cpf }}</dd></div>
+      <div><dt>Data de nascimento</dt><dd>{{ p.dataNascimento | dataBr }}</dd></div>
+      <div><dt>E-mail</dt><dd>{{ p.email }}</dd></div>
+      <div><dt>Telefone</dt><dd>{{ p.telefone | telefone }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h2>Veículos <span class="badge">{{ veiculos().length }}</span></h2>
+      <a class="btn btn-primary btn-sm" routerLink="/veiculos/novo" [queryParams]="{ pessoaId: p.id }">+ Adicionar veículo</a>
+    </div>
+
+    @if (veiculos().length === 0) {
+      <p class="muted">Nenhum veículo vinculado.</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th class="num">Ano</th>
+              <th class="actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (v of veiculos(); track v.id) {
+              <tr>
+                <td><span class="plate">{{ v.placa }}</span></td>
+                <td>{{ v.marca }}</td>
+                <td>{{ v.modelo }}</td>
+                <td class="num">{{ v.anoFabricacao }}</td>
+                <td class="actions">
+                  <a class="btn btn-sm" [routerLink]="['/veiculos', v.id, 'editar']">Editar</a>
+                  <button type="button" class="btn btn-sm btn-danger" (click)="excluirVeiculo(v)">Excluir</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+} @else {
+  <p class="muted center">Carregando…</p>
+}

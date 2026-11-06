@@ -1,0 +1,91 @@
+<header class="page-header">
+  <div>
+    <h1>Veículos</h1>
+    <p class="muted">Cada veículo está vinculado a uma pessoa.</p>
+  </div>
+  <a class="btn btn-primary" routerLink="/veiculos/novo">+ Novo veículo</a>
+</header>
+
+<section class="card">
+  <div class="toolbar">
+    <input
+      type="search"
+      class="input"
+      placeholder="Buscar por placa, marca ou modelo…"
+      aria-label="Buscar veículos"
+      (input)="onBuscar($any($event.target).value)"
+    />
+  </div>
+
+  @if (carregando() && !resultado()) {
+    <p class="muted center">Carregando…</p>
+  } @else if (resultado(); as r) {
+    @if (r.itens.length === 0) {
+      <div class="empty">
+        <p>Nenhum veículo encontrado.</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th class="num">Ano</th>
+              <th>Proprietário</th>
+              <th class="actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (v of r.itens; track v.id) {
+              <tr>
+                <td><span class="plate">{{ v.placa }}</span></td>
+                <td>{{ v.marca }}</td>
+                <td>{{ v.modelo }}</td>
+                <td class="num">{{ v.anoFabricacao }}</td>
+                <td><a [routerLink]="['/pessoas', v.pessoaId]">{{ v.pessoaNome }}</a></td>
+                <td class="actions">
+                  <a class="btn btn-sm" [routerLink]="['/veiculos', v.id, 'editar']">Editar</a>
+                  <button type="button" class="btn btn-sm" (click)="abrirTransferencia(v)">Transferir</button>
+                  <button type="button" class="btn btn-sm btn-danger" (click)="excluir(v)">Excluir</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-paginator
+        [pagina]="r.pagina"
+        [totalPaginas]="r.totalPaginas"
+        [totalItens]="r.totalItens"
+        (paginaChange)="irParaPagina($event)"
+      />
+    }
+  }
+</section>
+
+<dialog #dialogTransferir class="dialog" (close)="veiculoSelecionado.set(null)">
+  @if (veiculoSelecionado(); as v) {
+    <h2>Vincular veículo <span class="plate">{{ v.placa }}</span></h2>
+    <p class="muted">Proprietário atual: <strong>{{ v.pessoaNome }}</strong></p>
+
+    <label class="field">
+      <span>Nova pessoa *</span>
+      <select class="input" [ngModel]="novaPessoaId()" (ngModelChange)="novaPessoaId.set($event)">
+        <option value="" disabled>Selecione…</option>
+        @for (p of pessoas(); track p.id) {
+          <option [value]="p.id">{{ p.nome }} — {{ p.cpf | cpf }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="form-actions">
+      <button type="button" class="btn" (click)="fecharTransferencia()">Cancelar</button>
+      <button type="button" class="btn btn-primary" [disabled]="!novaPessoaId() || transferindo()" (click)="confirmarTransferencia()">
+        {{ transferindo() ? 'Salvando…' : 'Confirmar' }}
+      </button>
+    </div>
+  }
+</dialog>

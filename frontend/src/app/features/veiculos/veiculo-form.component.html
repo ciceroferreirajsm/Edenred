@@ -1,0 +1,66 @@
+<header class="page-header">
+  <div>
+    <a class="back" routerLink="/veiculos">‹ Veículos</a>
+    <h1>{{ editando ? 'Editar veículo' : 'Novo veículo' }}</h1>
+  </div>
+</header>
+
+<section class="card">
+  @if (carregando()) {
+    <p class="muted center">Carregando…</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+      <div class="grid">
+        <label class="field">
+          <span>Placa *</span>
+          <input class="input mono" formControlName="placa" appMask="placa" placeholder="ABC1D23" autocomplete="off" />
+          <app-field-error [control]="form.controls.placa" />
+        </label>
+
+        <label class="field">
+          <span>Ano de fabricação *</span>
+          <input class="input" type="number" formControlName="anoFabricacao" min="1886" [max]="anoAtual" />
+          <app-field-error [control]="form.controls.anoFabricacao" />
+        </label>
+
+        <label class="field">
+          <span>Marca *</span>
+          <input class="input" formControlName="marca" list="marcas" maxlength="60" placeholder="Digite ou escolha" />
+          <datalist id="marcas">
+            @for (m of marcas; track m) {
+              <option [value]="m"></option>
+            }
+          </datalist>
+          <app-field-error [control]="form.controls.marca" />
+        </label>
+
+        <label class="field">
+          <span>Modelo *</span>
+          <input class="input" formControlName="modelo" maxlength="80" />
+          <app-field-error [control]="form.controls.modelo" />
+        </label>
+
+        <label class="field span-2">
+          <span>Proprietário (pessoa) *</span>
+          <select class="input" formControlName="pessoaId">
+            <option value="" disabled>Selecione…</option>
+            @for (p of pessoas(); track p.id) {
+              <option [value]="p.id">{{ p.nome }} — {{ p.cpf | cpf }}</option>
+            }
+          </select>
+          <app-field-error [control]="form.controls.pessoaId" />
+          @if (pessoas().length === 0) {
+            <small class="muted">Nenhuma pessoa cadastrada. <a routerLink="/pessoas/nova">Cadastre uma pessoa</a> primeiro.</small>
+          }
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <a class="btn" routerLink="/veiculos">Cancelar</a>
+        <button type="submit" class="btn btn-primary" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  }
+</section>

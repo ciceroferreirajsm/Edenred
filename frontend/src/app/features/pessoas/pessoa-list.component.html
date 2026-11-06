@@ -1,0 +1,72 @@
+<header class="page-header">
+  <div>
+    <h1>Pessoas</h1>
+    <p class="muted">Cadastro de pessoas e seus veículos.</p>
+  </div>
+  <a class="btn btn-primary" routerLink="/pessoas/nova">+ Nova pessoa</a>
+</header>
+
+<section class="card">
+  <div class="toolbar">
+    <input
+      type="search"
+      class="input"
+      placeholder="Buscar por nome, e-mail ou CPF…"
+      aria-label="Buscar pessoas"
+      (input)="onBuscar($any($event.target).value)"
+    />
+  </div>
+
+  @if (carregando() && !resultado()) {
+    <p class="muted center">Carregando…</p>
+  } @else if (resultado(); as r) {
+    @if (r.itens.length === 0) {
+      <div class="empty">
+        <p>Nenhuma pessoa encontrada.</p>
+        @if (!busca()) {
+          <a class="btn btn-primary" routerLink="/pessoas/nova">Cadastrar a primeira pessoa</a>
+        }
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th>Nascimento</th>
+              <th>E-mail</th>
+              <th>Telefone</th>
+              <th class="num">Veículos</th>
+              <th class="actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of r.itens; track p.id) {
+              <tr>
+                <td><a [routerLink]="['/pessoas', p.id]">{{ p.nome }}</a></td>
+                <td class="mono">{{ p.cpf | cpf }}</td>
+                <td>{{ p.dataNascimento | dataBr }}</td>
+                <td>{{ p.email }}</td>
+                <td>{{ p.telefone | telefone }}</td>
+                <td class="num"><span class="badge">{{ p.quantidadeVeiculos }}</span></td>
+                <td class="actions">
+                  <a class="btn btn-sm" [routerLink]="['/pessoas', p.id]">Ver</a>
+                  <a class="btn btn-sm" [routerLink]="['/pessoas', p.id, 'editar']">Editar</a>
+                  <button type="button" class="btn btn-sm btn-danger" (click)="excluir(p)">Excluir</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-paginator
+        [pagina]="r.pagina"
+        [totalPaginas]="r.totalPaginas"
+        [totalItens]="r.totalItens"
+        (paginaChange)="irParaPagina($event)"
+      />
+    }
+  }
+</section>

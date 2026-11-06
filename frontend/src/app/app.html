@@ -1,0 +1,15 @@
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" routerLink="/">Cadastro<span>PV</span></a>
+    <nav class="nav">
+      <a routerLink="/pessoas" routerLinkActive="active">Pessoas</a>
+      <a routerLink="/veiculos" routerLinkActive="active">Veículos</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <router-outlet />
+</main>
+
+<app-toast-container />
